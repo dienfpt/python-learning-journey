@@ -59,7 +59,7 @@ chính) — **khi nào dùng** (use case thực tế, so với lựa chọn khá
 - [x] 7. Recursion — call stack, base case, so với loop
 - [x] 8. Sorting Algorithms — bubble/insertion/merge/quick, so với `sorted()`
 - [x] 9. Searching Algorithms — linear vs binary search
-- [ ] 10. Trees — Binary Tree, Binary Search Tree
+- [x] 10. Trees — Binary Tree, Binary Search Tree
 - [ ] 11. Graphs — adjacency list, BFS, DFS
 
 ## 1. Big-O Notation
@@ -286,3 +286,44 @@ chính) — **khi nào dùng** (use case thực tế, so với lựa chọn khá
   đổi liên tục và không cần tra cứu quá thường xuyên → `dict`/`set` (nếu
   chỉ cần biết tồn tại) vẫn là lựa chọn tốt nhất, `O(1)` mà không cần giữ
   thứ tự sorted.
+
+## 10. Trees
+
+- **Là gì**: cấu trúc phân cấp gồm các `node`, mỗi node có 1 node cha
+  (trừ `root`) và 0+ node con. **Binary Tree**: mỗi node tối đa 2 con
+  (`left`/`right`), không có ràng buộc thứ tự. **Binary Search Tree
+  (BST)**: binary tree có thêm quy ước tại **mọi** node: mọi giá trị bên
+  nhánh trái nhỏ hơn node, mọi giá trị bên nhánh phải lớn hơn — quy ước
+  này chính là thứ giúp search/insert nhanh hơn duyệt tuyến tính.
+- **Hoạt động thế nào**: giống Linked List, cài đặt bằng class (`TreeNode`
+  với `left`/`right` thay vì `next`), không có built-in ở Python/JS.
+  Search/insert trên BST tận dụng quy ước thứ tự: so sánh với node hiện
+  tại rồi rẽ trái/phải, loại bỏ hẳn 1 nhánh mỗi bước — cùng nguyên lý với
+  binary search trên list đã sorted (mục 9).
+- **4 cách duyệt cây (traversal)**:
+  - **Inorder** (trái → node → phải): trên BST luôn cho ra dãy **đã
+    sorted** — tính chất đặc trưng, dùng để lấy dữ liệu ra theo thứ tự.
+  - **Preorder** (node → trái → phải): root luôn đứng đầu — dùng để copy/
+    serialize cây (dễ tái tạo lại đúng cấu trúc từ danh sách preorder).
+  - **Postorder** (trái → phải → node): con luôn xử lý trước cha — dùng
+    khi cần giải phóng/xoá node con trước khi xoá node cha.
+  - **Level-order** (BFS theo từng tầng, xem lại mục Queues): dùng `queue`
+    thay vì đệ quy, hữu ích khi cần xử lý cây theo "độ sâu" (vd. tìm node
+    gần root nhất thoả điều kiện).
+- **Độ phức tạp**: search/insert/delete là `O(height)` — nếu cây **cân
+  bằng** (balanced), `height ≈ log n` nên các thao tác là `O(log n)`.
+  **Nhưng nếu insert dữ liệu đã sorted sẵn**, BST cơ bản (không tự cân
+  bằng) sẽ bị lệch hẳn 1 bên, trở thành **linked list trá hình** với
+  `height = n` → mọi thao tác tụt xuống `O(n)`. Đây là lý do thư viện
+  thực tế dùng **self-balancing tree** (AVL, Red-Black Tree — tự động
+  xoay cây để giữ cân bằng sau mỗi insert/delete); B-Tree (biến thể nhiều
+  nhánh) là nền tảng của hầu hết database index.
+- **Giới hạn của Python cần nhớ**: duyệt cây bằng đệ quy có thể gặp
+  `RecursionError` nếu cây quá sâu (`sys.getrecursionlimit()` mặc định
+  1000 — xem lại mục Recursion) — cây bị lệch hẳn 1 bên với hàng nghìn
+  node là ví dụ thực tế dễ gặp lỗi này; cần chuyển sang duyệt bằng loop +
+  stack/queue tường minh nếu dữ liệu có thể tạo cây rất sâu.
+- **Khi nào dùng**: dữ liệu có quan hệ phân cấp tự nhiên (cây thư mục,
+  DOM, tổ chức công ty), cần tra cứu/insert nhanh mà vẫn giữ thứ tự
+  (BST/self-balancing tree thay vì sort lại `list` mỗi lần), hoặc làm nền
+  cho cấu trúc phức tạp hơn (heap, trie, database index).
