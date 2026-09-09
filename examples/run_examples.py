@@ -40,13 +40,27 @@ def run_file(file_path: Path) -> None:
     spec = importlib.util.spec_from_file_location(file_path.stem, file_path)
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
-    spec.loader.exec_module(module)
 
-    if hasattr(module, "main"):
-        print(f"\n{'=' * 60}")
-        print(f"▶ {file_path.relative_to(EXAMPLES_DIR)}")
-        print("=" * 60)
-        module.main()
+    # Đăng ký vào sys.modules + thêm thư mục chứa file vào sys.path: cần
+    # thiết để multiprocessing (spawn) re-import được module này trong
+    # process con bằng đúng tên file_path.stem (xem phase3_concurrency/
+    # 03_multiprocessing.py) -- nếu không, pickle function bên trong module
+    # sẽ báo lỗi "import of module '<tên file>' failed". Phải giữ nguyên
+    # cho tới hết module.main() (không chỉ lúc exec_module) vì spawn có
+    # thể xảy ra bất cứ lúc nào trong quá trình chạy main().
+    sys.modules[file_path.stem] = module
+    sys.path.insert(0, str(file_path.parent))
+    try:
+        spec.loader.exec_module(module)
+
+        if hasattr(module, "main"):
+            print(f"\n{'=' * 60}")
+            print(f"▶ {file_path.relative_to(EXAMPLES_DIR)}")
+            print("=" * 60)
+            module.main()
+    finally:
+        sys.path.remove(str(file_path.parent))
+        del sys.modules[file_path.stem]
 
 
 def run_files_one_by_one(files: list[Path]) -> None:

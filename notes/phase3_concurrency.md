@@ -34,7 +34,7 @@ JS).
 
 - [x] 1. GIL (Global Interpreter Lock) — là gì, ảnh hưởng thế nào
 - [x] 2. Threading — I/O-bound concurrency, race condition, Lock
-- [ ] 3. Multiprocessing — CPU-bound parallelism, vượt qua GIL
+- [x] 3. Multiprocessing — CPU-bound parallelism, vượt qua GIL
 - [ ] 4. asyncio cơ bản — event loop, `async`/`await`, coroutine
 - [ ] 5. asyncio nâng cao — `Task`, `gather`, timeout, cancellation
 - [ ] 6. Chọn đúng mô hình — threading vs multiprocessing vs asyncio, so
@@ -115,3 +115,52 @@ JS).
   (mục 4-5) — đặc biệt khi làm việc với thư viện chỉ hỗ trợ blocking I/O
   (không có bản `async`). Với CPU-bound, threading **không giúp gì** — cần
   multiprocessing (mục 3).
+
+## 3. Multiprocessing
+
+- **Là gì**: `multiprocessing` module tạo các **process hệ điều hành hoàn
+  toàn riêng biệt** (khác thread chỉ là các luồng thực thi trong CÙNG 1
+  process) — mỗi process có **GIL riêng, không gian bộ nhớ riêng**. Đây
+  là cách chính thống để đạt **parallelism thật** cho CPU-bound trong
+  Python, vượt qua giới hạn của GIL (mục 1) mà threading (mục 2) không
+  làm được.
+- **Hoạt động thế nào**: API gần giống `threading` (`Process` thay
+  `Thread`, cùng `.start()`/`.join()`) — idiomatic hơn là
+  `concurrent.futures.ProcessPoolExecutor`, cùng interface với
+  `ThreadPoolExecutor` (`.map()`, `.submit()`), chỉ đổi thread → process
+  bên dưới.
+- **Đánh đổi lớn nhất — không share memory**: khác threading (share biến
+  global trực tiếp), mỗi process có bộ nhớ độc lập hoàn toàn. Không thể
+  "return" giá trị trực tiếp từ process con như gọi hàm bình thường — cần
+  cơ chế IPC (inter-process communication) tường minh: `multiprocessing.
+  Queue`/`Pipe` (gửi dữ liệu qua lại), `Value`/`Array` (bộ nhớ chia sẻ có
+  kiểu cố định, đồng bộ bằng lock ngầm). `ProcessPoolExecutor.map()` che
+  giấu bớt việc này (tự động pickle/gửi kết quả return về), nên thường
+  được ưu tiên dùng hơn `Process` thủ công.
+- **Chi phí (overhead)**: tạo process **tốn kém hơn nhiều** so với tạo
+  thread (cấp phát bộ nhớ mới, copy môi trường...) — vì vậy multiprocessing
+  chỉ đáng dùng khi khối lượng CPU-bound đủ lớn để bù lại chi phí khởi
+  tạo; với task nhỏ, chi phí tạo process có thể còn lớn hơn lợi ích song
+  song hoá.
+- **Ràng buộc kỹ thuật quan trọng**: chế độ mặc định trên macOS/Windows là
+  **"spawn"** (tạo process con hoàn toàn mới, import lại module) — hàm
+  truyền cho `Process`/`Pool` phải là **top-level function của 1 module
+  import được** (không phải lambda/closure/nested function, vì không
+  pickle được để gửi sang process con). Code khởi tạo process nên đặt
+  trong `if __name__ == "__main__":` để tránh spawn đệ quy vô hạn (mỗi
+  process con re-import module gốc, nếu code tạo process nằm ở top-level
+  sẽ tạo process mới mỗi lần import). Linux mặc định dùng "fork" (copy
+  trực tiếp process cha, không cần pickle function) nên ít gặp ràng buộc
+  này hơn, nhưng code viết portable nên tuân theo quy tắc "spawn" để chạy
+  đúng trên mọi hệ điều hành.
+- **So sánh JS**: gần nhất là `child_process`/`cluster` module của
+  Node.js — cũng phải dùng process riêng (không phải Worker Threads share
+  memory) để đạt CPU parallelism thật, cùng lý do: mỗi process có runtime
+  riêng, không bị nghẽn bởi 1 event loop/GIL chung. Khác biệt: Node
+  thường phải tự thiết kế giao thức IPC, còn `multiprocessing` cung cấp
+  sẵn `Queue`/`Pool.map()` tiện dùng hơn.
+- **Khi nào dùng**: công việc CPU-bound nặng thực sự (xử lý ảnh/video
+  hàng loạt, tính toán khoa học, nén dữ liệu lớn) mà không dùng được thư
+  viện C release GIL (`numpy` thường đã đủ nhanh mà không cần
+  multiprocessing). Không dùng cho I/O-bound — threading/asyncio nhẹ hơn
+  nhiều cho trường hợp đó.
