@@ -55,7 +55,7 @@ chính) — **khi nào dùng** (use case thực tế, so với lựa chọn khá
 - [x] 3. Linked Lists — singly/doubly, so với `list`
 - [x] 4. Stacks — LIFO, dùng `list` làm stack
 - [x] 5. Queues — FIFO, `collections.deque`
-- [ ] 6. Hash Tables — cách `dict` hoạt động bên trong (hashing, collision)
+- [x] 6. Hash Tables — cách `dict` hoạt động bên trong (hashing, collision)
 - [ ] 7. Recursion — call stack, base case, so với loop
 - [ ] 8. Sorting Algorithms — bubble/insertion/merge/quick, so với `sorted()`
 - [ ] 9. Searching Algorithms — linear vs binary search
@@ -164,3 +164,31 @@ chính) — **khi nào dùng** (use case thực tế, so với lựa chọn khá
     đến trước - phục vụ trước.
   - `queue.Queue` (khác `collections.deque`) dùng khi cần thread-safe cho
     concurrent programming (xem thêm ở Phase 3 — Concurrency).
+
+## 6. Hash Tables
+
+- **Là gì**: cấu trúc lưu cặp `key -> value`, cho phép lookup/insert/delete
+  gần như tức thời bất kể dữ liệu lớn cỡ nào. Python `dict` (và `set`,
+  vốn là dict không có value) chính là hash table — không phải cấu trúc
+  "nên học riêng", mà là **hiểu cơ chế của thứ đã dùng hàng ngày**.
+- **Hoạt động thế nào**: dùng hàm băm (`hash(key)`) để biến key thành 1 số
+  nguyên, rồi lấy số đó modulo với kích thước bảng để ra "bucket" (vị trí)
+  lưu trữ — tra cứu không cần so sánh tuần tự như `list`. **Collision**
+  (2 key khác nhau băm ra cùng bucket) là không tránh khỏi; cách xử lý phổ
+  biến: *separate chaining* (mỗi bucket giữ 1 list các cặp key-value —
+  cách file `06_hash_tables.py` tự implement để dễ hình dung) hoặc *open
+  addressing* (CPython dùng cách này thật cho `dict`: khi collision, dò
+  tìm bucket trống kế tiếp theo 1 công thức xác định).
+- **Điều kiện bắt buộc**: key phải **hashable** (immutable) — `str`, `int`,
+  `tuple` (chỉ khi mọi phần tử bên trong cũng hashable) dùng được, `list`/
+  `dict`/`set` thì **không** — vì nếu key có thể bị mutate sau khi đã lưu,
+  hash của nó thay đổi và phá vỡ vị trí bucket đã tính trước đó.
+- **Độ phức tạp**: `O(1)` trung bình cho get/set/delete/`in` — đây là lý
+  do nên dùng `dict`/`set` thay vì `list` mỗi khi cần tra cứu tồn tại
+  nhiều lần. Trường hợp xấu nhất (mọi key đều collide) là `O(n)`, nhưng
+  hàm băm tốt của Python khiến trường hợp này gần như không xảy ra trong
+  thực tế.
+- **Khi nào dùng**: đếm tần suất (`collections.Counter`), cache/memoization
+  (map input -> kết quả đã tính), loại bỏ trùng lặp (`set`), index dữ liệu
+  theo 1 trường để tra cứu nhanh (map `user_id -> user object` thay vì
+  duyệt `list[User]` mỗi lần cần tìm).
