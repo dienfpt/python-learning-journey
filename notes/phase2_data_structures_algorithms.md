@@ -60,7 +60,7 @@ chính) — **khi nào dùng** (use case thực tế, so với lựa chọn khá
 - [x] 8. Sorting Algorithms — bubble/insertion/merge/quick, so với `sorted()`
 - [x] 9. Searching Algorithms — linear vs binary search
 - [x] 10. Trees — Binary Tree, Binary Search Tree
-- [ ] 11. Graphs — adjacency list, BFS, DFS
+- [x] 11. Graphs — adjacency list, BFS, DFS
 
 ## 1. Big-O Notation
 
@@ -327,3 +327,42 @@ chính) — **khi nào dùng** (use case thực tế, so với lựa chọn khá
   DOM, tổ chức công ty), cần tra cứu/insert nhanh mà vẫn giữ thứ tự
   (BST/self-balancing tree thay vì sort lại `list` mỗi lần), hoặc làm nền
   cho cấu trúc phức tạp hơn (heap, trie, database index).
+
+## 11. Graphs
+
+- **Là gì**: cấu trúc tổng quát gồm các **node** (đỉnh) nối với nhau bằng
+  **edge** (cạnh) — không ràng buộc phân cấp cha/con như Tree. Thực chất
+  **Tree là 1 dạng đặc biệt của Graph**: không có chu trình (cycle), và
+  giữa 2 node bất kỳ chỉ có đúng 1 đường đi. Có thể **vô hướng**
+  (undirected — cạnh đi được 2 chiều, vd. bạn bè Facebook) hoặc **có
+  hướng** (directed — cạnh chỉ đi được 1 chiều, vd. follow trên Twitter/X)
+  và **có trọng số** (weighted, vd. khoảng cách giữa 2 thành phố) hoặc
+  không.
+- **Hoạt động thế nào — 2 cách biểu diễn phổ biến**:
+  - **Adjacency List** (dùng trong `11_graphs.py`): `dict[node, list[neighbor]]`.
+    Tốn `O(V + E)` bộ nhớ (V = số đỉnh, E = số cạnh) — hiệu quả cho đồ
+    thị **thưa** (sparse, ít cạnh so với số đỉnh), là lựa chọn mặc định
+    trong thực tế.
+  - **Adjacency Matrix**: ma trận `V x V`, ô `[i][j] = 1` nếu có cạnh nối
+    i-j. Tốn `O(V^2)` bộ nhớ bất kể số cạnh thực tế, nhưng tra cứu "có
+    cạnh giữa i và j không" là `O(1)` (so với `O(V)` của adjacency list).
+    Chỉ nên dùng khi đồ thị **dày đặc** (dense, gần như mọi cặp đỉnh đều
+    có cạnh).
+- **BFS (Breadth-First Search)** — dùng **queue** (xem lại mục Queues):
+  duyệt theo từng "lớp" khoảng cách tăng dần từ điểm bắt đầu. Đảm bảo tìm
+  ra đường đi **ngắn nhất theo số cạnh** trên đồ thị không trọng số — đây
+  là ứng dụng quan trọng nhất của BFS (tìm bạn chung gần nhất, số bước di
+  chuyển tối thiểu...).
+- **DFS (Depth-First Search)** — dùng **stack** (xem lại mục Stacks, có
+  thể viết tường minh hoặc bằng đệ quy vì call stack chính là stack ẩn):
+  đi sâu nhất có thể theo 1 nhánh trước khi quay lui thử nhánh khác. Dùng
+  khi cần duyệt **toàn bộ** đồ thị (không quan tâm đường ngắn nhất), phát
+  hiện chu trình, topological sort, tìm connected components.
+- **Độ phức tạp**: cả BFS và DFS đều `O(V + E)` — mỗi đỉnh và mỗi cạnh chỉ
+  được xử lý đúng 1 lần nhờ tập `visited` đánh dấu đã ghé qua (thiếu bước
+  này sẽ lặp vô hạn nếu đồ thị có chu trình).
+- **Khi nào dùng**: mạng xã hội (bạn bè, follow), bản đồ/định tuyến
+  (đường đi ngắn nhất — thực tế dùng Dijkstra/A* cho đồ thị có trọng số,
+  nâng cao hơn BFS), dependency graph (thứ tự build/install package),
+  web crawler (BFS/DFS theo link), phát hiện deadlock (chu trình trong
+  directed graph).
