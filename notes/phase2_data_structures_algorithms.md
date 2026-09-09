@@ -56,7 +56,7 @@ chính) — **khi nào dùng** (use case thực tế, so với lựa chọn khá
 - [x] 4. Stacks — LIFO, dùng `list` làm stack
 - [x] 5. Queues — FIFO, `collections.deque`
 - [x] 6. Hash Tables — cách `dict` hoạt động bên trong (hashing, collision)
-- [ ] 7. Recursion — call stack, base case, so với loop
+- [x] 7. Recursion — call stack, base case, so với loop
 - [ ] 8. Sorting Algorithms — bubble/insertion/merge/quick, so với `sorted()`
 - [ ] 9. Searching Algorithms — linear vs binary search
 - [ ] 10. Trees — Binary Tree, Binary Search Tree
@@ -192,3 +192,34 @@ chính) — **khi nào dùng** (use case thực tế, so với lựa chọn khá
   (map input -> kết quả đã tính), loại bỏ trùng lặp (`set`), index dữ liệu
   theo 1 trường để tra cứu nhanh (map `user_id -> user object` thay vì
   duyệt `list[User]` mỗi lần cần tìm).
+
+## 7. Recursion
+
+- **Là gì**: một hàm tự gọi lại chính nó để giải bài toán nhỏ hơn, cho
+  đến khi chạm **base case** (điều kiện dừng) thì trả kết quả ngược lên.
+  Thiếu base case (hoặc base case không bao giờ đạt tới) sẽ gây đệ quy
+  vô hạn.
+- **Hoạt động thế nào**: mỗi lần gọi hàm tạo 1 "stack frame" mới (giữ biến
+  cục bộ + vị trí cần quay lại) và push vào call stack (xem lại mục
+  Stacks); khi hàm return, frame đó pop ra. Vì vậy đệ quy về bản chất là
+  dùng stack ẩn — bất kỳ đệ quy nào cũng có thể viết lại bằng loop + stack
+  tường minh.
+- **Độ phức tạp — dễ nhầm nhất là đệ quy không có memoization**: ví dụ
+  `fibonacci_naive(n)` là `O(2^n)` vì tính lại cùng 1 giá trị con rất
+  nhiều lần (fibonacci(3) bị gọi lại nhiều lần khi tính fibonacci(5)).
+  Thêm memoization (cache kết quả đã tính, dùng `@functools.lru_cache` có
+  sẵn của Python) hạ xuống `O(n)`.
+- **Giới hạn quan trọng của Python**: `sys.getrecursionlimit()` mặc định
+  chỉ 1000 — thấp hơn nhiều so với JS engine (thường cho phép sâu hơn
+  trước khi stack overflow). Port thuật toán đệ quy từ JS sang Python cho
+  input lớn (duyệt cây sâu, chia để trị trên n lớn) dễ gặp
+  `RecursionError` dù cùng logic chạy tốt bên JS — cần chuyển sang loop
+  hoặc tăng limit bằng `sys.setrecursionlimit()` (cẩn thận, không giải
+  quyết tận gốc vấn đề bộ nhớ).
+- Không có TCO (Tail Call Optimization) ở cả Python lẫn JS (khác một số
+  ngôn ngữ như Scheme/Elixir) — viết đệ quy dạng "tail call" không giúp
+  tiết kiệm stack như các ngôn ngữ đó.
+- **Khi nào dùng**: bài toán có cấu trúc chia để trị (merge sort, quick
+  sort — xem mục Sorting) hoặc dữ liệu lồng nhau độ sâu không biết trước
+  (duyệt cây, đồ thị, JSON/nested list, cây thư mục) — đệ quy diễn tả tự
+  nhiên và ngắn gọn hơn loop trong các trường hợp này.
