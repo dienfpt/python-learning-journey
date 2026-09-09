@@ -33,7 +33,7 @@ JS).
 ## Tiến độ
 
 - [x] 1. GIL (Global Interpreter Lock) — là gì, ảnh hưởng thế nào
-- [ ] 2. Threading — I/O-bound concurrency, race condition, Lock
+- [x] 2. Threading — I/O-bound concurrency, race condition, Lock
 - [ ] 3. Multiprocessing — CPU-bound parallelism, vượt qua GIL
 - [ ] 4. asyncio cơ bản — event loop, `async`/`await`, coroutine
 - [ ] 5. asyncio nâng cao — `Task`, `gather`, timeout, cancellation
@@ -76,3 +76,42 @@ JS).
   PEP 703) — chưa phải mặc định, cần build riêng, hệ sinh thái thư viện
   chưa hỗ trợ đầy đủ. Kiến thức GIL ở trên vẫn là mô hình mặc định cần
   nắm vững.
+
+## 2. Threading
+
+- **Là gì**: `threading` module tạo các **OS thread thật**, chạy trong
+  cùng 1 process và **share chung bộ nhớ** (biến global, object...). Nhờ
+  GIL release lúc chờ I/O (mục 1), threading là công cụ tốt cho bài toán
+  **I/O-bound** (gọi API, đọc/ghi file, query DB) — nhiều thread có thể
+  cùng "chờ" song song, giảm tổng thời gian chờ gần bằng thời gian của
+  tác vụ chậm nhất thay vì cộng dồn.
+- **Hoạt động thế nào**: `threading.Thread(target=fn, args=...)` tạo
+  thread, `.start()` chạy, `.join()` chờ thread đó xong. Idiomatic hơn:
+  `concurrent.futures.ThreadPoolExecutor` — tự quản lý 1 pool thread có
+  sẵn, tránh chi phí tạo/huỷ thread liên tục và cung cấp `.map()`/
+  `.submit()` tiện dùng hơn quản lý `Thread` thủ công.
+- **Race condition — rủi ro lớn nhất của shared memory**: khi 2+ thread
+  cùng đọc-sửa-ghi 1 biến chung mà không đồng bộ hoá, kết quả cuối cùng
+  phụ thuộc vào **thứ tự thực thi ngẫu nhiên** giữa các thread — thường
+  cho ra kết quả sai (increment bị "mất") mà không có exception nào báo
+  lỗi, rất khó debug vì **không tái hiện được ổn định** (có thể đúng ở
+  máy dev, sai ở production dưới tải cao). File `02_threading.py` cưỡng
+  bức context switch (`time.sleep(0)`) giữa bước đọc và ghi để tái hiện
+  lỗi này 1 cách xác định (deterministic) cho mục đích minh hoạ.
+- **`threading.Lock` (mutex)**: `with lock: ...` đảm bảo chỉ 1 thread
+  được vào đoạn code đó (critical section) tại 1 thời điểm — thread khác
+  phải **chờ** tới khi lock được giải phóng. Sửa được race condition,
+  đánh đổi là chậm hơn (overhead acquire/release) và có thể gây
+  **deadlock** nếu nhiều lock được acquire theo thứ tự không nhất quán
+  giữa các thread.
+- **So sánh JS**: Node.js không có race condition kiểu này ở code JS
+  thường vì luôn chạy trên 1 thread duy nhất. `Worker Threads` của Node
+  (thread thật, dùng cho CPU-bound) mặc định **không share memory** —
+  giao tiếp qua message passing (giống gửi tin nhắn, copy dữ liệu) trừ
+  khi cố tình dùng `SharedArrayBuffer` — an toàn hơn nhưng cũng hạn chế
+  hơn threading của Python (share biến trực tiếp, tiện nhưng dễ lỗi).
+- **Khi nào dùng**: nhiều tác vụ I/O-bound độc lập cần chạy đồng thời
+  (gọi nhiều API, đọc nhiều file) mà không muốn chuyển hẳn sang asyncio
+  (mục 4-5) — đặc biệt khi làm việc với thư viện chỉ hỗ trợ blocking I/O
+  (không có bản `async`). Với CPU-bound, threading **không giúp gì** — cần
+  multiprocessing (mục 3).
