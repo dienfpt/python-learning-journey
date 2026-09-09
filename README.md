@@ -60,9 +60,9 @@ python examples/phase1_basics/07_data_structures.py
 - [x] **Phase 1 — Python Core Differences**: syntax, data types, operators,
       strings, conditionals, loops, list/tuple/set/dict, type casting,
       functions, exceptions, comments, type annotations
-- [ ] **Phase 2 — Data Structures & Algorithms**: Big-O, arrays, linked
+- [x] **Phase 2 — Data Structures & Algorithms**: Big-O, arrays, linked
       lists, stacks, queues, hash tables, recursion, sorting, searching,
-      trees, graphs (in progress — see notes/phase2_data_structures_algorithms.md)
+      trees, graphs
 - [ ] **Phase 3 — Concurrency & Async**: GIL, asyncio, threading vs
       multiprocessing
 - [ ] **Phase 4 — FastAPI Core**: Pydantic v2, dependency injection, async DB
