@@ -3,16 +3,17 @@ name = "python-learning-journey"
 version = "0.1.0"
 description = "Personal Python learning notes & runnable examples, JS dev -> FastAPI/performance track"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "pydantic>=2.0",
+    "httpx2",  # dùng cho TestClient -- httpx (v1) đã deprecated cho việc này
+]
 
-# Phase 4+ sẽ thêm dần:
-# dependencies = [
-#     "fastapi",
-#     "uvicorn[standard]",
-#     "pydantic>=2.0",
+# Phase 4 (Async DB) sẽ thêm tiếp:
+# dependencies += [
 #     "sqlalchemy>=2.0",
-#     "asyncpg",
-#     "httpx",
+#     "aiosqlite",   # DB nhẹ để học local, production dùng asyncpg (Postgres)
 #     "pytest",
 #     "pytest-asyncio",
 # ]
