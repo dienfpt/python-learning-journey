@@ -52,7 +52,7 @@ chính) — **khi nào dùng** (use case thực tế, so với lựa chọn khá
 
 - [x] 1. Big-O Notation — đo độ phức tạp thời gian/không gian
 - [x] 2. Arrays / Python `list` — dynamic array, độ phức tạp từng thao tác
-- [ ] 3. Linked Lists — singly/doubly, so với `list`
+- [x] 3. Linked Lists — singly/doubly, so với `list`
 - [ ] 4. Stacks — LIFO, dùng `list` làm stack
 - [ ] 5. Queues — FIFO, `collections.deque`
 - [ ] 6. Hash Tables — cách `dict` hoạt động bên trong (hashing, collision)
@@ -94,3 +94,30 @@ chính) — **khi nào dùng** (use case thực tế, so với lựa chọn khá
 - Gotcha kinh điển: `[[0] * 3] * 3` tạo 3 dòng **cùng tham chiếu** tới 1
   list con (nhân list = nhân reference, không nhân giá trị) — dùng list
   comprehension `[[0] * 3 for _ in range(3)]` để tạo ma trận đúng.
+
+## 3. Linked Lists
+
+- **Là gì**: chuỗi các `Node`, mỗi node giữ `value` + con trỏ `next` tới
+  node kế tiếp. Không có built-in trong cả Python lẫn JS — phải tự tạo
+  class, hoặc dùng `collections.deque` (doubly linked list có sẵn).
+- **Hoạt động thế nào**: khác `list`/`Array` lưu liền kề (contiguous) trong
+  bộ nhớ, các Node của linked list nằm **rải rác**, liên kết với nhau qua
+  reference. Vì vậy không thể "nhảy" tới phần tử thứ *i* — phải đi từng
+  bước từ `head`.
+- **Độ phức tạp**:
+  - Truy cập theo index / tìm kiếm theo giá trị: `O(n)` (không có random
+    access, khác hẳn `list[i]` là `O(1)`).
+  - Thêm/xoá ở **đầu** (`head`), hoặc ở vị trí **đã có sẵn con trỏ tới
+    node đó**: `O(1)` — chỉ cần đổi vài con trỏ, không dịch chuyển phần
+    tử như array.
+  - Thêm vào **cuối**: `O(n)` nếu không giữ `tail` pointer riêng (phải
+    duyệt hết để tìm node cuối).
+- **Doubly linked list**: mỗi node có thêm con trỏ `prev`, cho phép duyệt
+  2 chiều và xoá `O(1)` nếu đã có reference tới node (không cần duyệt từ
+  đầu để tìm node trước nó). `collections.deque` của Python được cài đặt
+  bằng doubly linked list → `appendleft()`/`popleft()` là `O(1)`, khác
+  `list.insert(0, x)`/`list.pop(0)` là `O(n)`.
+- **Khi nào dùng**: cần thêm/xoá liên tục ở đầu hoặc giữa danh sách (queue,
+  undo history, LRU cache) mà không muốn trả giá dịch chuyển phần tử của
+  array. Nếu chỉ cần thao tác ở **cuối** hoặc random access theo index —
+  `list` vẫn tốt hơn (cache-friendly hơn vì bộ nhớ liền kề).
