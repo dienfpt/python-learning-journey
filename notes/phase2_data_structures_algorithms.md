@@ -58,7 +58,7 @@ chính) — **khi nào dùng** (use case thực tế, so với lựa chọn khá
 - [x] 6. Hash Tables — cách `dict` hoạt động bên trong (hashing, collision)
 - [x] 7. Recursion — call stack, base case, so với loop
 - [x] 8. Sorting Algorithms — bubble/insertion/merge/quick, so với `sorted()`
-- [ ] 9. Searching Algorithms — linear vs binary search
+- [x] 9. Searching Algorithms — linear vs binary search
 - [ ] 10. Trees — Binary Tree, Binary Search Tree
 - [ ] 11. Graphs — adjacency list, BFS, DFS
 
@@ -259,3 +259,30 @@ chính) — **khi nào dùng** (use case thực tế, so với lựa chọn khá
   lý do đặc biệt (bộ nhớ cực hạn chế → cân nhắc in-place quick sort; cần
   đảm bảo `O(n log n)` worst case tuyệt đối → merge sort thay vì quick
   sort).
+
+## 9. Searching Algorithms
+
+- **Là gì**: tìm vị trí (hoặc xác nhận sự tồn tại) của 1 phần tử trong
+  collection. Đây chính là bài toán mà mục Hash Tables đã giải rất nhanh
+  (`O(1)`) cho `dict`/`set` — mục này bàn về tìm kiếm trên **list**, nơi
+  không có sẵn cơ chế hash.
+- **Linear Search** — `O(n)`: duyệt tuần tự từng phần tử, không yêu cầu
+  dữ liệu đã sorted. Đây là cách `in`/`list.index()` của Python và
+  `indexOf()`/`includes()` của JS hoạt động bên trong.
+- **Binary Search** — `O(log n)`: **yêu cầu bắt buộc dữ liệu đã sorted**.
+  Mỗi bước so sánh với phần tử ở giữa rồi loại bỏ hẳn 1 nửa không gian tìm
+  kiếm — vì vậy nhanh hơn linear search rất nhiều với dữ liệu lớn (100,000
+  phần tử: ~17 bước so với tối đa 100,000 bước).
+- **Đánh đổi cần nhớ**: binary search nhanh hơn nhưng **cần dữ liệu đã
+  sorted trước** — nếu dữ liệu thay đổi liên tục (insert/delete nhiều),
+  chi phí giữ list luôn sorted (`O(n)` mỗi lần insert đúng vị trí) có thể
+  làm mất lợi thế so với việc chỉ linear search khi cần.
+- **Module `bisect`**: Python có sẵn binary search cho list đã sorted —
+  `bisect_left`/`bisect_right` tìm vị trí chèn giữ nguyên thứ tự sorted,
+  `insort` chèn trực tiếp vào đúng vị trí. JS không có tương đương built-in,
+  phải tự viết hoặc dùng thư viện ngoài.
+- **Khi nào dùng**: dữ liệu **tĩnh hoặc ít thay đổi, cần tra cứu nhiều
+  lần** → sort 1 lần rồi binary search (hoặc dùng `bisect`). Dữ liệu thay
+  đổi liên tục và không cần tra cứu quá thường xuyên → `dict`/`set` (nếu
+  chỉ cần biết tồn tại) vẫn là lựa chọn tốt nhất, `O(1)` mà không cần giữ
+  thứ tự sorted.
