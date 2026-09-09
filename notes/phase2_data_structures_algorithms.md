@@ -5,6 +5,49 @@ nhưng roadmap.sh/python liệt kê đây là bước tiếp theo sau Core Basic
 nắm vững sẽ giúp code Python "đúng idiom" hơn (biết khi nào dùng `list` vs
 `deque` vs `dict`, độ phức tạp của các thao tác built-in, v.v.)
 
+## DSA là gì?
+
+- **Data Structure (cấu trúc dữ liệu)**: cách tổ chức + lưu trữ dữ liệu
+  trong bộ nhớ sao cho việc truy cập/thao tác hiệu quả cho một mục đích cụ
+  thể. Không có cấu trúc nào "tốt nhất" tuyệt đối — mỗi loại đánh đổi
+  (trade-off) giữa tốc độ đọc, tốc độ ghi, và bộ nhớ sử dụng khác nhau.
+  Ví dụ: `list` đọc theo index nhanh (`O(1)`) nhưng chèn ở đầu chậm
+  (`O(n)`); linked list thì ngược lại.
+- **Algorithm (thuật toán)**: một chuỗi bước hữu hạn, rõ ràng để giải quyết
+  một bài toán cụ thể (sắp xếp, tìm kiếm, duyệt đồ thị...). Cùng một bài
+  toán có thể có nhiều thuật toán khác nhau, khác nhau về tốc độ và bộ nhớ
+  tiêu tốn — đây là lý do cần Big-O để so sánh khách quan.
+- Hai khái niệm luôn đi cùng nhau: **chọn đúng data structure** thường là
+  bước quan trọng nhất để một algorithm chạy nhanh. Ví dụ: bài toán "kiểm
+  tra phần tử có tồn tại không" — dùng `list` thì thuật toán tốt nhất vẫn
+  là `O(n)` (phải duyệt), nhưng đổi sang `set`/`dict` thì thành `O(1)`
+  ngay cả với thuật toán "ngây thơ" nhất (`in` operator).
+
+## Tại sao cần học DSA?
+
+- **Viết code hiệu quả hơn**: code chạy đúng với 100 dòng test data nhưng
+  có thể sập (timeout, OOM) với 1 triệu dòng ở production nếu chọn sai cấu
+  trúc dữ liệu/thuật toán. Hiểu độ phức tạp giúp nhận ra vấn đề ngay khi
+  viết code, không cần đợi production báo lỗi.
+- **Đọc hiểu source code thư viện tốt hơn**: biết `dict` là hash table,
+  `deque` là doubly linked list, `sorted()` dùng Timsort... giúp đoán được
+  performance characteristic của code mà không cần đọc source.
+- **Interview**: hầu hết coding interview (kể cả cho vị trí không phải
+  "thuật toán chuyên sâu") đều kiểm tra DSA cơ bản — đây gần như là ngôn
+  ngữ chung của ngành.
+- **Nền tảng cho system design**: cache (hash table), rate limiter (queue/
+  sliding window), database index (B-tree — biến thể của tree), load
+  balancing (heap)... đều xây trên các cấu trúc dữ liệu nền tảng ở đây.
+- Với người đã có 10 năm kinh nghiệm JS: đây là kiến thức **ngôn ngữ nào
+  cũng dùng chung** (khác các phase JS→Python khác), nên đầu tư ở đây có
+  lợi ích lâu dài, không chỉ riêng cho Python.
+
+## Nội dung từng mục sẽ bao gồm
+
+Mỗi mục dưới đây trả lời 4 câu hỏi: **là gì** (định nghĩa) — **hoạt động
+thế nào** (cơ chế bên trong) — **độ phức tạp** (Big-O của các thao tác
+chính) — **khi nào dùng** (use case thực tế, so với lựa chọn khác).
+
 ## Tiến độ
 
 - [x] 1. Big-O Notation — đo độ phức tạp thời gian/không gian
