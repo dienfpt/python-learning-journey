@@ -1,0 +1,22 @@
+[project]
+name = "python-learning-journey"
+version = "0.1.0"
+description = "Personal Python learning notes & runnable examples, JS dev -> FastAPI/performance track"
+requires-python = ">=3.11"
+dependencies = []
+
+# Phase 4+ sẽ thêm dần:
+# dependencies = [
+#     "fastapi",
+#     "uvicorn[standard]",
+#     "pydantic>=2.0",
+#     "sqlalchemy>=2.0",
+#     "asyncpg",
+#     "httpx",
+#     "pytest",
+#     "pytest-asyncio",
+# ]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
