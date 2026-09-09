@@ -57,7 +57,7 @@ chính) — **khi nào dùng** (use case thực tế, so với lựa chọn khá
 - [x] 5. Queues — FIFO, `collections.deque`
 - [x] 6. Hash Tables — cách `dict` hoạt động bên trong (hashing, collision)
 - [x] 7. Recursion — call stack, base case, so với loop
-- [ ] 8. Sorting Algorithms — bubble/insertion/merge/quick, so với `sorted()`
+- [x] 8. Sorting Algorithms — bubble/insertion/merge/quick, so với `sorted()`
 - [ ] 9. Searching Algorithms — linear vs binary search
 - [ ] 10. Trees — Binary Tree, Binary Search Tree
 - [ ] 11. Graphs — adjacency list, BFS, DFS
@@ -223,3 +223,39 @@ chính) — **khi nào dùng** (use case thực tế, so với lựa chọn khá
   sort — xem mục Sorting) hoặc dữ liệu lồng nhau độ sâu không biết trước
   (duyệt cây, đồ thị, JSON/nested list, cây thư mục) — đệ quy diễn tả tự
   nhiên và ngắn gọn hơn loop trong các trường hợp này.
+
+## 8. Sorting Algorithms
+
+- **Là gì**: nhóm thuật toán sắp xếp lại thứ tự phần tử trong 1 collection
+  theo 1 tiêu chí (tăng dần, giảm dần...). Trong thực tế **hầu như không
+  bao giờ tự viết** — dùng `sorted()`/`list.sort()` built-in — nhưng hiểu
+  cơ chế các thuật toán kinh điển giúp nắm vững đánh đổi giữa tốc độ, bộ
+  nhớ, và tính ổn định (stable sort).
+- **Bubble Sort** — `O(n^2)`: so sánh từng cặp phần tử liền kề, đổi chỗ
+  nếu sai thứ tự, lặp lại nhiều vòng. Đơn giản nhất nhưng chậm nhất, chỉ
+  có giá trị học thuật.
+- **Insertion Sort** — `O(n^2)` trung bình, nhưng `O(n)` nếu dữ liệu **gần
+  như đã sorted**: chèn từng phần tử vào đúng vị trí trong phần đã sorted
+  phía trước. Nhiều thuật toán hybrid thực tế (kể cả Timsort) dùng
+  insertion sort cho các đoạn dữ liệu nhỏ vì overhead thấp.
+- **Merge Sort** — `O(n log n)` **luôn luôn** (best/avg/worst case, không
+  có trường hợp xấu): chia để trị bằng đệ quy (xem lại mục Recursion) —
+  chia đôi liên tục tới khi còn 1 phần tử, rồi merge lại theo đúng thứ
+  tự. Đánh đổi: cần `O(n)` bộ nhớ phụ. **Stable** (giữ thứ tự tương đối
+  của phần tử bằng nhau).
+- **Quick Sort** — `O(n log n)` trung bình nhưng `O(n^2)` **worst case**
+  (khi pivot luôn rơi vào phần tử nhỏ/lớn nhất, vd. chọn pivot đầu tiên
+  trên list đã sorted sẵn). Đổi lại thường nhanh hơn merge sort trong
+  thực tế vì ít cần bộ nhớ phụ (in-place). Không stable theo cách cài đặt
+  thông thường.
+- **`sorted()`/`list.sort()` của Python dùng Timsort**: lai giữa merge
+  sort và insertion sort, `O(n log n)` worst case, **stable**, tối ưu đặc
+  biệt tốt cho dữ liệu đã sorted 1 phần (best case gần `O(n)`). JS
+  `Array.prototype.sort()` (V8, từ ES2019) cũng dùng Timsort — cùng độ
+  phức tạp, nhưng JS mặc định so sánh theo **string** (`10` đứng trước
+  `9` nếu không truyền comparator) — Python `sorted()` so sánh đúng theo
+  type của phần tử, an toàn hơn.
+- **Khi nào dùng thuật toán nào**: thực tế luôn dùng `sorted()` trừ khi có
+  lý do đặc biệt (bộ nhớ cực hạn chế → cân nhắc in-place quick sort; cần
+  đảm bảo `O(n log n)` worst case tuyệt đối → merge sort thay vì quick
+  sort).
