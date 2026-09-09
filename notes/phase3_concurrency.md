@@ -36,7 +36,7 @@ JS).
 - [x] 2. Threading — I/O-bound concurrency, race condition, Lock
 - [x] 3. Multiprocessing — CPU-bound parallelism, vượt qua GIL
 - [x] 4. asyncio cơ bản — event loop, `async`/`await`, coroutine
-- [ ] 5. asyncio nâng cao — `Task`, `gather`, timeout, cancellation
+- [x] 5. asyncio nâng cao — `Task`, `gather`, timeout, cancellation
 - [ ] 6. Chọn đúng mô hình — threading vs multiprocessing vs asyncio, so
       sánh với Node.js event loop
 
@@ -207,3 +207,43 @@ JS).
   FastAPI (Phase 4). Yêu cầu: mọi thư viện I/O dùng trong coroutine phải
   có bản `async` (vd. `httpx.AsyncClient` thay vì `requests`) — dùng thư
   viện sync bên trong coroutine sẽ block event loop, mất hết lợi ích.
+
+## 5. asyncio nâng cao — Task, gather, timeout, cancellation
+
+- **`asyncio.gather(*coros)`**: chạy nhiều coroutine **đồng thời**, trả
+  về list kết quả theo đúng thứ tự truyền vào. Tổng thời gian ~= tác vụ
+  chậm nhất (không cộng dồn) — đây là cách thực sự "khai thác" lợi ích
+  của asyncio mà `await` tuần tự (mục 4) không làm được. Tương đương
+  `Promise.all()` của JS.
+- **`asyncio.create_task(coro)`**: lên lịch coroutine chạy **ngay trong
+  background** trên event loop hiện tại (khác gọi thường chỉ tạo coroutine
+  object chưa chạy gì) — cho phép code tiếp tục làm việc khác, rồi
+  `await task` sau để lấy kết quả khi cần. `gather()` về bản chất tạo
+  Task cho từng coroutine truyền vào và đợi tất cả hoàn thành.
+- **Timeout**: `async with asyncio.timeout(seconds):` (Python 3.11+) hoặc
+  `asyncio.wait_for(coro, timeout=seconds)` (mọi phiên bản) — tự động hủy
+  coroutine nếu chạy quá lâu, raise `TimeoutError`. Quan trọng cho code
+  gọi API bên ngoài: không có timeout, 1 request treo có thể làm cả
+  chương trình treo theo.
+- **Cancellation**: `task.cancel()` ném `asyncio.CancelledError` vào
+  **đúng điểm** task đang `await` — cho phép dừng công việc đang chạy dở
+  giữa chừng. **Khác biệt lớn với JS**: `Promise` không có cơ chế hủy
+  chuẩn trong ngôn ngữ (phải tự cài đặt bằng `AbortController` + kiểm tra
+  cờ thủ công) — `Task` của Python có `.cancel()` built-in, tích hợp sẵn
+  vào cơ chế `await`.
+- **`gather(..., return_exceptions=True)`**: mặc định, 1 coroutine lỗi
+  trong `gather()` khiến toàn bộ `gather()` raise ngay (các coroutine
+  khác vẫn tiếp tục chạy ngầm nhưng kết quả bị bỏ qua). Truyền
+  `return_exceptions=True` để giữ lại **mọi** kết quả (kể cả exception
+  object) thay vì dừng sớm — cần thiết khi muốn biết chính xác task nào
+  lỗi mà không hủy các task còn lại.
+- **`asyncio.TaskGroup`** (Python 3.11+, không có trong ví dụ ở đây):
+  cách hiện đại hơn `gather()` để quản lý nhiều task — tự động hủy các
+  task còn lại nếu 1 task lỗi (structured concurrency), thay vì phải tự
+  xử lý bằng `return_exceptions`.
+- **Khi nào dùng**: `gather`/`create_task` bất cứ khi nào cần nhiều thao
+  tác I/O độc lập chạy song song (gọi nhiều API cùng lúc trong 1 request
+  handler của FastAPI — Phase 4); `timeout` cho MỌI lời gọi ra bên ngoài
+  (network, DB) để tránh treo vô thời hạn; `cancel()` khi user hủy thao
+  tác (đóng tab, hủy request) hoặc khi 1 trong nhiều task song song đã đủ
+  kết quả cần thiết (không cần chờ các task còn lại).
