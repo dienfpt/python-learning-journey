@@ -33,16 +33,51 @@ vì FastAPI dùng `async def` làm mô hình xử lý request mặc định.
 - [ ] 7. Background Tasks & WebSocket
 - [ ] 8. Testing FastAPI — `TestClient`, pytest-asyncio
 
-## Cách chạy example ở phase này
+## Cấu trúc mỗi topic — best-practice FastAPI project layout
+
+Khác các phase trước (1 file .py phẳng = 1 concept), mỗi topic ở Phase 4
+là **1 folder riêng** trong `examples/phase4_fastapi/`, theo cấu trúc
+chuẩn của 1 FastAPI project thực tế thay vì gộp hết vào 1 file:
+
+```
+01_first_app/
+├── __init__.py
+├── core/
+│   └── config.py       # cấu hình app (host/port/title...)
+├── routers/
+│   └── books.py        # APIRouter theo từng resource (giống Controller NestJS)
+├── schemas.py           # Pydantic/TypedDict models cho request/response
+├── dependencies.py       # dependency dùng chung qua Depends() (Phase 4.3+)
+├── main.py               # entry point: tạo FastAPI(), include_router()
+└── run_demo.py           # chạy demo — xem bên dưới
+```
+
+Cấu trúc này được tạo **đầy đủ ngay từ topic 1**, kể cả file gần như rỗng
+(`dependencies.py` chưa dùng tới Phase 4.3) — để mọi topic sau chỉ cần
+**thêm nội dung** vào đúng file có sẵn, không phải đảo lại layout giữa
+chừng.
+
+## Cách chạy example ở phase này — server thật, không phải TestClient
 
 Khác các phase trước (script chạy xong là kết thúc), FastAPI app thường
-là **long-running server**. Để giữ đúng quy ước `def main()` chạy được
-qua `run_examples.py` (không cần mở terminal thứ 2 để gõ `curl`), phần
-lớn example ở đây dùng `fastapi.testclient.TestClient` — gọi thẳng vào
-app trong cùng process, in ra kết quả, không cần khởi động server thật.
-Đây cũng chính là cách viết **test** cho FastAPI trong thực tế (Phase
-4.8). Mỗi file vẫn có `if __name__ == "__main__": uvicorn.run(...)` được
-comment sẵn để chạy server thật + xem `/docs` khi muốn.
+là **long-running server**. Mỗi topic có `run_demo.py`: khởi động
+**uvicorn thật** (bind cổng TCP thật trên `127.0.0.1`) trong 1 background
+thread, đợi tới khi server sẵn sàng, rồi gọi bằng `httpx2.Client` **qua
+network thật** (không phải `TestClient` gọi thẳng vào app qua ASGI
+transport ảo trong cùng process) — gần với việc tự chạy `uvicorn` rồi
+`curl` thủ công, nhưng vẫn tự động hoá được để chạy qua `run_examples.py`
+(runner tự nhận diện `run_demo.py` bên trong mỗi topic folder). Server
+được tắt sạch sẽ sau khi demo xong.
+
+Muốn tự chạy server + xem `/docs` (Swagger UI) thủ công:
+
+```bash
+uvicorn main:app --reload --app-dir examples/phase4_fastapi/01_first_app --port 8001
+# rồi mở http://127.0.0.1:8001/docs
+```
+
+`TestClient` (dựa trên `httpx2`) vẫn là công cụ chuẩn để viết **test**
+thật sự cho FastAPI — sẽ quay lại dùng nó ở Phase 4.8 (Testing).
 
 ## 1. FastAPI cơ bản — App, Routing, Path/Query Params
 
@@ -70,7 +105,11 @@ comment sẵn để chạy server thật + xem `/docs` khi muốn.
 - **`/docs` tự sinh miễn phí**: chỉ cần chạy `uvicorn app:app --reload`
   rồi mở `http://127.0.0.1:8000/docs` — Swagger UI tương tác được sinh ra
   hoàn toàn từ route + type hint, không cần viết OpenAPI spec riêng.
-- **Cách chạy example trong repo này**: dùng `TestClient` (dựa trên
-  `httpx2` — bản mới của `httpx`, package cũ đã deprecated cho việc này)
-  để gọi thẳng vào `app` trong cùng process, không cần mở server thật.
-  Xem chi tiết ở phần "Cách chạy example ở phase này" phía trên.
+- **Tách router riêng (`routers/books.py`)**: các route liên quan tới 1
+  resource (`books`) được gom vào 1 `APIRouter` riêng, `main.py` chỉ
+  `include_router()` — giống tách `express.Router()` theo resource hoặc
+  Controller riêng trong NestJS, thay vì định nghĩa hết route trong 1 file
+  duy nhất.
+- **Cách chạy example trong repo này**: `run_demo.py` khởi động **uvicorn
+  thật** (không phải `TestClient`) rồi gọi bằng `httpx2.Client` qua network
+  thật. Xem chi tiết ở phần "Cách chạy example ở phase này" phía trên.

@@ -35,6 +35,12 @@ Nguyên tắc thiết kế để **mở rộng dễ dàng**:
   giải thích + so sánh JS ở đầu file
 - `run_examples.py` tự động discover và chạy mọi file trong 1 phase — thêm
   file mới vào folder là chạy được ngay, không cần sửa runner
+- **Từ Phase 4 (FastAPI) trở đi**: mỗi topic là **1 folder riêng** theo
+  best-practice layout của 1 FastAPI project (`main.py`, `routers/`,
+  `schemas.py`, `dependencies.py`, `core/config.py`) thay vì 1 file .py
+  phẳng, và chạy server FastAPI **thật** (uvicorn) thay vì `TestClient` —
+  xem `notes/phase4_fastapi.md` để biết chi tiết. Runner nhận diện topic
+  dạng này qua file `run_demo.py` bên trong mỗi topic folder.
 
 ## Cách dùng
 
@@ -53,6 +59,9 @@ python examples/run_examples.py phase1_basics 07_data_structures
 
 # Chạy trực tiếp 1 file (mỗi file tự chạy được luôn)
 python examples/phase1_basics/07_data_structures.py
+
+# Phase 4+ (FastAPI): chạy 1 topic folder (khởi động server thật + gọi thử)
+python examples/run_examples.py phase4_fastapi 01_first_app
 ```
 
 ## Roadmap tracking
