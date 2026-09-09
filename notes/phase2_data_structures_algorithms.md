@@ -53,7 +53,7 @@ chính) — **khi nào dùng** (use case thực tế, so với lựa chọn khá
 - [x] 1. Big-O Notation — đo độ phức tạp thời gian/không gian
 - [x] 2. Arrays / Python `list` — dynamic array, độ phức tạp từng thao tác
 - [x] 3. Linked Lists — singly/doubly, so với `list`
-- [ ] 4. Stacks — LIFO, dùng `list` làm stack
+- [x] 4. Stacks — LIFO, dùng `list` làm stack
 - [ ] 5. Queues — FIFO, `collections.deque`
 - [ ] 6. Hash Tables — cách `dict` hoạt động bên trong (hashing, collision)
 - [ ] 7. Recursion — call stack, base case, so với loop
@@ -121,3 +121,25 @@ chính) — **khi nào dùng** (use case thực tế, so với lựa chọn khá
   undo history, LRU cache) mà không muốn trả giá dịch chuyển phần tử của
   array. Nếu chỉ cần thao tác ở **cuối** hoặc random access theo index —
   `list` vẫn tốt hơn (cache-friendly hơn vì bộ nhớ liền kề).
+
+## 4. Stacks
+
+- **Là gì**: cấu trúc **LIFO** (Last In, First Out) — phần tử thêm vào sau
+  cùng sẽ được lấy ra đầu tiên. Chỉ có 2 thao tác chính: `push` (thêm vào
+  đỉnh) và `pop` (lấy ra khỏi đỉnh).
+- **Hoạt động thế nào**: Python không có class `Stack` riêng — dùng thẳng
+  `list`, coi **cuối list là đỉnh stack**: `push` = `list.append(x)`,
+  `pop` = `list.pop()` (không tham số = lấy phần tử cuối). Giống hệt
+  `Array.push()`/`Array.pop()` của JS.
+- **Độ phức tạp**: `push`/`pop`/`peek` (xem đỉnh, `stack[-1]`) đều `O(1)`
+  vì thao tác ở cuối list — đây là lý do **không** dùng `insert(0, x)`/
+  `pop(0)` để giả lập stack (sai vị trí LIFO và tốn `O(n)`).
+- **Khi nào dùng**:
+  - Kiểm tra ngoặc/tag cân bằng (compiler, linter, HTML parser).
+  - Undo/Redo (mỗi hành động push vào stack, undo = pop).
+  - **Call stack**: cơ chế Python/JS quản lý function call chính là 1
+    stack ẩn — mỗi lần gọi hàm push 1 "stack frame", return thì pop. Đây
+    là lý do đệ quy sâu quá sẽ bị `RecursionError`/`Stack Overflow` (xem
+    thêm ở mục Recursion).
+  - DFS (Depth-First Search) trên cây/đồ thị — dùng stack (hoặc đệ quy,
+    về bản chất là stack ẩn) để luôn đi sâu nhất có thể trước khi quay lui.
