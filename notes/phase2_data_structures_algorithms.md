@@ -8,7 +8,7 @@ nắm vững sẽ giúp code Python "đúng idiom" hơn (biết khi nào dùng `
 ## Tiến độ
 
 - [x] 1. Big-O Notation — đo độ phức tạp thời gian/không gian
-- [ ] 2. Arrays / Python `list` — dynamic array, độ phức tạp từng thao tác
+- [x] 2. Arrays / Python `list` — dynamic array, độ phức tạp từng thao tác
 - [ ] 3. Linked Lists — singly/doubly, so với `list`
 - [ ] 4. Stacks — LIFO, dùng `list` làm stack
 - [ ] 5. Queues — FIFO, `collections.deque`
@@ -34,3 +34,20 @@ nắm vững sẽ giúp code Python "đúng idiom" hơn (biết khi nào dùng `
 - `dict`/`set` lookup (`key in d`) là `O(1)` trung bình nhờ hash table —
   khác hẳn `O(n)` của tìm trong `list`, đây là lý do nên dùng `set`/`dict`
   để check tồn tại thay vì `list`.
+
+## 2. Arrays / Python `list`
+
+- Python `list` là **dynamic array**, giống JS `Array` — cấp phát dư
+  (over-allocate) bộ nhớ khi grow, không resize mỗi lần thêm phần tử.
+  Nhờ vậy `append()` là `O(1)` amortized thay vì `O(n)` mỗi lần.
+- `insert(0, x)` và `pop(0)` là `O(n)` vì phải dịch chuyển toàn bộ phần tử
+  còn lại — giống `unshift()`/`shift()` chậm của JS. Cần thao tác nhiều ở
+  **đầu** list → dùng `collections.deque` (`O(1)` cả hai đầu) thay vì `list`.
+- Slicing (`lst[1:4]`) tạo **list mới** (shallow copy), không phải view —
+  khác `numpy` array hay JS `TypedArray.subarray()`.
+- Shallow copy chỉ copy 1 lớp: list lồng nhau (`list[list]`) vẫn share
+  reference tới phần tử con → sửa qua bản copy vẫn ảnh hưởng bản gốc. Cần
+  `copy.deepcopy()` nếu muốn tách hoàn toàn.
+- Gotcha kinh điển: `[[0] * 3] * 3` tạo 3 dòng **cùng tham chiếu** tới 1
+  list con (nhân list = nhân reference, không nhân giá trị) — dùng list
+  comprehension `[[0] * 3 for _ in range(3)]` để tạo ma trận đúng.
