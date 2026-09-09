@@ -35,7 +35,7 @@ JS).
 - [x] 1. GIL (Global Interpreter Lock) — là gì, ảnh hưởng thế nào
 - [x] 2. Threading — I/O-bound concurrency, race condition, Lock
 - [x] 3. Multiprocessing — CPU-bound parallelism, vượt qua GIL
-- [ ] 4. asyncio cơ bản — event loop, `async`/`await`, coroutine
+- [x] 4. asyncio cơ bản — event loop, `async`/`await`, coroutine
 - [ ] 5. asyncio nâng cao — `Task`, `gather`, timeout, cancellation
 - [ ] 6. Chọn đúng mô hình — threading vs multiprocessing vs asyncio, so
       sánh với Node.js event loop
@@ -164,3 +164,46 @@ JS).
   viện C release GIL (`numpy` thường đã đủ nhanh mà không cần
   multiprocessing). Không dùng cho I/O-bound — threading/asyncio nhẹ hơn
   nhiều cho trường hợp đó.
+
+## 4. asyncio cơ bản — Event Loop, async/await, Coroutine
+
+- **Là gì**: mô hình concurrency **đơn luồng** (single-threaded) dựa trên
+  **event loop** — vòng lặp trung tâm luân phiên chạy nhiều coroutine,
+  chuyển sang coroutine khác mỗi khi coroutine hiện tại `await` 1 việc cần
+  chờ (I/O). Không dùng OS thread/process nên **không có race condition**
+  kiểu threading (mục 2) — tại một thời điểm chỉ đúng 1 đoạn code Python
+  đang chạy, không có 2 đoạn code cùng xen vào giữa chừng.
+- **`async def`** định nghĩa 1 **coroutine function** — gọi hàm này
+  **không chạy code bên trong ngay**, chỉ tạo ra 1 **coroutine object**
+  (giống 1 "kế hoạch sẽ chạy", gần với Promise của JS nhưng "lazy" hơn —
+  Promise JS bắt đầu chạy ngay khi tạo, coroutine Python thì không chạy gì
+  cho tới khi được await/schedule).
+- **`await`** mới thực sự chạy coroutine đó và lấy giá trị return, đồng
+  thời là điểm mà event loop **có thể** chuyển sang chạy việc khác trong
+  lúc chờ. Quên `await` là lỗi rất phổ biến — Python cảnh báo
+  `RuntimeWarning: coroutine '...' was never awaited` (file
+  `04_asyncio_basics.py` minh hoạ trực tiếp lỗi này).
+- **Hiểu lầm phổ biến nhất — await tuần tự KHÔNG tạo ra concurrency**:
+  `await a(); await b(); await c()` chạy **lần lượt**, tổng thời gian vẫn
+  cộng dồn như gọi hàm sync bình thường — `async`/`await` tự nó chỉ là cú
+  pháp cho phép nhường CPU tại điểm `await`, không tự động chạy song song.
+  Muốn nhiều coroutine chạy **đồng thời**, cần `asyncio.gather()` hoặc
+  `asyncio.create_task()` (mục 5).
+- **`asyncio.run()`** là entry point bắt buộc: tạo event loop mới, chạy 1
+  coroutine cho tới khi xong, rồi đóng event loop. **Khác Node.js**: JS
+  runtime tự có sẵn event loop chạy ngầm ngay khi script bắt đầu (không
+  cần dòng khởi động nào) — Python cần khai báo tường minh, và (ở mức cơ
+  bản) không thể "vừa async vừa không" trong cùng 1 chương trình theo
+  kiểu JS — code gọi coroutine phải nằm trong ngữ cảnh async (`async def`
+  khác) hoặc được `asyncio.run()` khởi động.
+- **`asyncio.sleep()` vs `time.sleep()`**: `asyncio.sleep()` là
+  **non-blocking** — nhường quyền điều khiển lại cho event loop trong lúc
+  chờ, cho phép coroutine khác chạy. `time.sleep()` là **blocking** — dừng
+  toàn bộ thread (kể cả event loop) trong lúc chờ, phá vỡ hoàn toàn lợi
+  ích của asyncio nếu dùng nhầm bên trong coroutine.
+- **Khi nào dùng**: bài toán I/O-bound cần chạy **rất nhiều** tác vụ đồng
+  thời (hàng trăm/nghìn request) — asyncio nhẹ hơn threading nhiều (không
+  tốn chi phí tạo OS thread cho mỗi tác vụ), là mô hình mặc định của
+  FastAPI (Phase 4). Yêu cầu: mọi thư viện I/O dùng trong coroutine phải
+  có bản `async` (vd. `httpx.AsyncClient` thay vì `requests`) — dùng thư
+  viện sync bên trong coroutine sẽ block event loop, mất hết lợi ích.
