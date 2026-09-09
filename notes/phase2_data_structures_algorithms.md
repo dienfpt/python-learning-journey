@@ -54,7 +54,7 @@ chính) — **khi nào dùng** (use case thực tế, so với lựa chọn khá
 - [x] 2. Arrays / Python `list` — dynamic array, độ phức tạp từng thao tác
 - [x] 3. Linked Lists — singly/doubly, so với `list`
 - [x] 4. Stacks — LIFO, dùng `list` làm stack
-- [ ] 5. Queues — FIFO, `collections.deque`
+- [x] 5. Queues — FIFO, `collections.deque`
 - [ ] 6. Hash Tables — cách `dict` hoạt động bên trong (hashing, collision)
 - [ ] 7. Recursion — call stack, base case, so với loop
 - [ ] 8. Sorting Algorithms — bubble/insertion/merge/quick, so với `sorted()`
@@ -143,3 +143,24 @@ chính) — **khi nào dùng** (use case thực tế, so với lựa chọn khá
     thêm ở mục Recursion).
   - DFS (Depth-First Search) trên cây/đồ thị — dùng stack (hoặc đệ quy,
     về bản chất là stack ẩn) để luôn đi sâu nhất có thể trước khi quay lui.
+
+## 5. Queues
+
+- **Là gì**: cấu trúc **FIFO** (First In, First Out) — phần tử thêm vào
+  đầu tiên sẽ được lấy ra đầu tiên, giống hàng người xếp hàng. Thao tác
+  chính: `enqueue` (thêm vào cuối) và `dequeue` (lấy ra khỏi đầu).
+- **Hoạt động thế nào**: **không dùng `list` làm queue** trong Python nếu
+  cần hiệu năng — `list.pop(0)` là `O(n)` vì phải dịch chuyển toàn bộ phần
+  tử còn lại lên trước 1 vị trí. Dùng `collections.deque` thay thế:
+  `enqueue` = `deque.append(x)`, `dequeue` = `deque.popleft()`.
+- **Độ phức tạp**: `deque` được cài đặt bằng doubly linked list nội bộ nên
+  `append()`/`appendleft()`/`pop()`/`popleft()` đều `O(1)` — đối xứng ở cả
+  2 đầu, khác hẳn `list` chỉ nhanh ở 1 đầu (cuối).
+- **Khi nào dùng**:
+  - **BFS** (Breadth-First Search) trên cây/đồ thị — dùng queue để duyệt
+    theo từng "lớp" (level), đảm bảo tìm được đường đi ngắn nhất theo số
+    cạnh trên đồ thị không trọng số (khác DFS dùng stack, đi sâu trước).
+  - Task/job queue, message queue, print queue — xử lý theo đúng thứ tự
+    đến trước - phục vụ trước.
+  - `queue.Queue` (khác `collections.deque`) dùng khi cần thread-safe cho
+    concurrent programming (xem thêm ở Phase 3 — Concurrency).
