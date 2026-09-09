@@ -37,7 +37,7 @@ JS).
 - [x] 3. Multiprocessing — CPU-bound parallelism, vượt qua GIL
 - [x] 4. asyncio cơ bản — event loop, `async`/`await`, coroutine
 - [x] 5. asyncio nâng cao — `Task`, `gather`, timeout, cancellation
-- [ ] 6. Chọn đúng mô hình — threading vs multiprocessing vs asyncio, so
+- [x] 6. Chọn đúng mô hình — threading vs multiprocessing vs asyncio, so
       sánh với Node.js event loop
 
 ## 1. GIL (Global Interpreter Lock)
@@ -247,3 +247,47 @@ JS).
   (network, DB) để tránh treo vô thời hạn; `cancel()` khi user hủy thao
   tác (đóng tab, hủy request) hoặc khi 1 trong nhiều task song song đã đủ
   kết quả cần thiết (không cần chờ các task còn lại).
+
+## 6. Chọn đúng mô hình concurrency
+
+- **Bảng quyết định nhanh** (chi tiết từng dòng đã giải thích ở mục 1-5):
+
+  | Bài toán | Công cụ | Vì sao |
+  |---|---|---|
+  | CPU-bound (tính toán nặng) | `multiprocessing` | GIL chặn threading; cần process riêng để dùng nhiều core |
+  | I/O-bound, số lượng lớn (hàng trăm+) | `asyncio` | Coroutine nhẹ hơn OS thread rất nhiều, scale tốt hơn |
+  | I/O-bound, số lượng nhỏ, hoặc phải dùng thư viện chỉ hỗ trợ sync | `threading` | Đơn giản hơn asyncio, không cần thư viện có bản `async` |
+  | I/O-bound + CPU-bound trộn lẫn | `asyncio` + `multiprocessing` (hoặc `run_in_executor`) | asyncio quản lý I/O, đẩy phần CPU-bound sang process pool riêng |
+
+- **Overhead là yếu tố quyết định threading vs asyncio khi cùng là
+  I/O-bound**: ở quy mô nhỏ (vài chục tác vụ), thời gian chạy gần như
+  giống nhau — cả 2 đều "song song hoá" được việc chờ đợi. Khác biệt nằm
+  ở **chi phí tạo mỗi đơn vị công việc**: 1 OS thread tốn vài MB bộ nhớ +
+  chi phí context-switch của hệ điều hành; 1 coroutine chỉ là 1 object
+  Python nhẹ, do chính asyncio quản lý trong 1 thread duy nhất. Đây là lý
+  do server xử lý hàng nghìn connection đồng thời (vd. FastAPI, Phase 4)
+  hầu như luôn chọn asyncio thay vì "1 thread cho mỗi connection".
+- **So sánh với Node.js Event Loop**: Node.js chỉ có **1 mô hình chính**
+  cho code JS thông thường — event loop (dựa trên libuv), về bản chất
+  tương đương asyncio (đơn luồng, non-blocking I/O, `async`/`await`).
+  Khác biệt cốt lõi với Python:
+  - Node **không cho lựa chọn threading/multiprocessing cho code JS
+    thường** — event loop luôn là mặc định. Muốn CPU parallelism thật
+    phải ra khỏi mô hình đó hoàn toàn (Worker Threads hoặc
+    `child_process`/`cluster`, tương ứng gần với `multiprocessing` của
+    Python).
+  - Python có sẵn **cả 3** mô hình (threading/multiprocessing/asyncio)
+    ngay trong thư viện chuẩn — linh hoạt hơn nhưng đổi lại **phải tự
+    biết chọn** đúng công cụ cho từng bài toán, đây chính là lý do phase
+    này tồn tại như 1 chương học riêng (JS dev thường chỉ cần thành thạo
+    `async`/`await` là đủ cho hầu hết trường hợp).
+  - I/O trong Node **luôn non-blocking mặc định** (mọi API chuẩn như
+    `fs`, `http` đều async) — Python thì **ngược lại**, phần lớn thư viện
+    chuẩn/bên thứ 3 là **blocking/sync theo mặc định** (`requests`,
+    `open()`...), phải chủ động chọn bản `async` tương đương (`httpx`,
+    `aiofiles`) mới tận dụng được asyncio — dễ mắc lỗi "gọi nhầm hàm sync
+    trong coroutine" hơn hẳn so với JS.
+- **Chuẩn bị cho Phase 4 (FastAPI)**: FastAPI dùng asyncio làm mô hình
+  concurrency mặc định (`async def` cho route handler) — mọi kiến thức ở
+  phase này (đặc biệt mục 4-5: coroutine, `gather`, timeout) là nền tảng
+  trực tiếp để viết API production-ready hiệu quả.

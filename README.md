@@ -63,8 +63,8 @@ python examples/phase1_basics/07_data_structures.py
 - [x] **Phase 2 — Data Structures & Algorithms**: Big-O, arrays, linked
       lists, stacks, queues, hash tables, recursion, sorting, searching,
       trees, graphs
-- [ ] **Phase 3 — Concurrency & Async**: GIL, asyncio, threading vs
-      multiprocessing
+- [x] **Phase 3 — Concurrency & Async**: GIL, threading, multiprocessing,
+      asyncio, choosing the right model
 - [ ] **Phase 4 — FastAPI Core**: Pydantic v2, dependency injection, async DB
 - [ ] **Phase 5 — Performance Optimization**: ASGI servers, profiling,
       caching, serialization
